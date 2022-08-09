@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 
 namespace phase_2_back.Controllers
@@ -8,18 +9,20 @@ namespace phase_2_back.Controllers
     public class personInfoController : ControllerBase
     {
         private readonly HttpClient _client;
+        private IConfiguration _configuration;
 
         private static List<personInfo> personInfoList = new List<personInfo> { };
 
-        public personInfoController(IHttpClientFactory clientFactory)
+        public personInfoController(IHttpClientFactory clientFactory, IConfiguration configuration)
         {
             if (clientFactory is null)
             {
                 throw new ArgumentNullException(nameof(clientFactory));
             }
             _client = clientFactory.CreateClient("ipInfo");
+            _configuration = configuration;
         }
-        
+
         /// <summary>
         /// return IP info directly from external API
         /// </summary>
@@ -29,7 +32,7 @@ namespace phase_2_back.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetIpInfo(String ipString)
         {
-            var res = await _client.GetAsync("/" + ipString + "?token=?token=54370b3dbd9873");
+            var res = await _client.GetAsync("/" + ipString + "?token=" + _configuration.GetConnectionString("apiKey"));
             var content = await res.Content.ReadAsStringAsync();
             return Ok(content);
         }
@@ -80,7 +83,7 @@ namespace phase_2_back.Controllers
                 return BadRequest("Id already exist. Change or use updatePersonInfo instead.");
             }
 
-            var result = await _client.GetAsync("/" + ipString + "?token=54370b3dbd9873");
+            var result = await _client.GetAsync("/" + ipString + "?token=" + _configuration.GetConnectionString("apiKey"));
             var content = await result.Content.ReadAsStringAsync();
             
             var parsedContent = JObject.Parse(content);       
@@ -116,18 +119,23 @@ namespace phase_2_back.Controllers
             {
                 return BadRequest("Id not found. Use post addPersonInfo instead.");
             }
-            var result = await _client.GetAsync("/" + ipString + "?token=54370b3dbd9873");
+            var result = await _client.GetAsync("/" + ipString + "?token=" + _configuration.GetConnectionString("apiKey"));
             var content = await result.Content.ReadAsStringAsync();
 
             var parsedContent = JObject.Parse(content);
 
+            try
+            {
+                infoToChange.location = parsedContent["loc"].ToString();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(result);
+            }
 
             infoToChange.name = name;
             infoToChange.ip = ipString;
-            try { 
-                infoToChange.location = parsedContent["loc"].ToString(); }
-            catch (Exception e) { 
-                return BadRequest(result); }
+            
                 
             return Ok(infoToChange);
         }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using NSubstitute;
 using phase_2_back.Controllers;
 using System.Web.Http;
@@ -21,8 +22,9 @@ namespace phase_2_back_unit_test
         [SetUp]
         public void Setup()
         {
+            var config = Substitute.For<IConfiguration>();
             var clientFactory = Substitute.For<IHttpClientFactory>();
-            controller = new personInfoController(clientFactory);
+            controller = new personInfoController(clientFactory, config);
         }
 
         [Test]
