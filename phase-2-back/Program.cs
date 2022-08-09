@@ -1,4 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using phase_2_back.Data;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<phase_2_backContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("phase_2_backContext") ?? throw new InvalidOperationException("Connection string 'phase_2_backContext' not found.")));
 
 // Add services to the container.
 
@@ -6,6 +11,10 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddHttpClient("ipInfo", configureClient: client =>
+    { client.BaseAddress = new Uri("https://ipinfo.io");}
+);
 
 var app = builder.Build();
 
