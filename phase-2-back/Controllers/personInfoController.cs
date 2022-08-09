@@ -19,7 +19,7 @@ namespace phase_2_back.Controllers
             }
             _client = clientFactory.CreateClient("ipInfo");
         }
-
+        
         /// <summary>
         /// return IP info directly from external API
         /// </summary>
@@ -29,7 +29,7 @@ namespace phase_2_back.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetIpInfo(String ipString)
         {
-            var res = await _client.GetAsync("/" + ipString + "?token=54370b3dbd9873");
+            var res = await _client.GetAsync("/" + ipString + "?token=?token=54370b3dbd9873");
             var content = await res.Content.ReadAsStringAsync();
             return Ok(content);
         }
@@ -40,10 +40,30 @@ namespace phase_2_back.Controllers
         /// </summary>
         /// <returns>A JSON object representing all personInfo</returns>
         [HttpGet]
+        [Route("getPersonInfoList")]
         [ProducesResponseType(200)]
-        public async Task<IActionResult> getPersonInfoList()
+        public IActionResult getPersonInfoList()
         {
             return Ok(personInfoList);
+        }
+
+        /// <summary>
+        /// get personInfo with Id
+        /// </summary>
+        /// <returns>A 200 ok Response with personInfo, 400 BadRequest if id does not exist</returns>
+        [HttpGet]
+        [Route("getPersonInfo")]
+        public IActionResult getPersonInfo(int id)
+        {
+            var infoToChange = personInfoList.Find(x => x.id == id);
+            if (infoToChange == null)
+            {
+                return BadRequest("Id not found.");
+            }
+            else
+            {
+                return Ok(infoToChange);
+            }
         }
 
         /// <summary>
@@ -51,7 +71,7 @@ namespace phase_2_back.Controllers
         /// </summary>
         /// <returns>A 200 OK response or 400 error if external api call fails</returns>
         [HttpPost]
-        
+        [Route("addPersonInfo")]
         public async Task<IActionResult> addPersonInfo(String ipString, String name, int id)
         {
             var infoToChange = personInfoList.Find(x => x.id == id);
@@ -88,6 +108,7 @@ namespace phase_2_back.Controllers
         /// </summary>
         /// <returns>A 200 OK response or 400 error if external api call fails</returns>
         [HttpPut]
+        [Route("updatePersonInfo")]
         public async Task<IActionResult> updatePersonInfo(String ipString, String name, int id)
         {
             var infoToChange = personInfoList.Find(x => x.id == id);
@@ -117,7 +138,7 @@ namespace phase_2_back.Controllers
         /// </summary>
         /// <returns>A 204 No Content Response: item deleted, 400 BadRequest if id does not exist</returns>
         [HttpDelete]
-        [ProducesResponseType(204)]
+        [Route("deletePersonInfo")]
         public IActionResult deletePersonInfo(int id)
         {
             var infoToChange = personInfoList.Find(x => x.id == id);
