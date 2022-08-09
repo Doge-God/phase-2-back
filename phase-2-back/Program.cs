@@ -16,6 +16,7 @@ builder.Services.AddHttpClient("ipInfo", configureClient: client =>
     { client.BaseAddress = new Uri("https://ipinfo.io");}
 );
 
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
